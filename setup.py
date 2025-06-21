@@ -11,8 +11,8 @@ setup(
         'scikit-learn',
         'matplotlib',
     ],
-    author='Seu Nome',
-    author_email='seu.email@exemplo.com',
+    author='William silva',
+    author_email='Williamkauasoaresdasilva@gmail.com',
     description='Sistema de recomendação de embeddings para grafos com IA',
     url='https://github.com/seuusuario/seurepositorio',
 )
