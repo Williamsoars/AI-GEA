@@ -1,2 +1,2 @@
 # AI-GEA
-A artificial inteligence for graph embedding analisys, featuring multiple funsctions for embedding recomendatationn
+An artificial inteligence for graph embedding analisys, featuring multiple functions for embedding recomendatation
