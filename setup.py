@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='graph_embedding_recommender',
-    version='0.1.1',
+    version='0.1.0',  # MAJOR.MINOR.PATCH
     packages=find_packages(),
     install_requires=[
         'networkx>=2.5',
@@ -12,6 +12,7 @@ setup(
         'matplotlib>=3.3.0',
         'gensim>=4.0.0',
         'node2vec>=0.4.0',
+        'tqdm>=4.0.0',
     ],
     python_requires='>=3.7',
     author='William Silva',
@@ -21,7 +22,17 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/seuusuario/seurepositorio',
     classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Science/Research',
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
+    keywords='graph embedding machine-learning recommendation',
+    project_urls={
+        'Documentation': 'https://github.com/seuusuario/seurepositorio/docs',
+        'Source': 'https://github.com/seuusuario/seurepositorio',
+        'Tracker': 'https://github.com/seuusuario/seurepositorio/issues',
+    },
+)
