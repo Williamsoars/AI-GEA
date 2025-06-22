@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime
+import fcntl
 
 class Logger:
     def __init__(self, path='recommendation_log.json'):
@@ -16,8 +17,17 @@ class Logger:
             'recommended_embedding': recommended,
             'scores': scores
         }
-        with open(self.path, 'r+') as f:
-            logs = json.load(f)
-            logs.append(log_entry)
-            f.seek(0)
-            json.dump(logs, f, indent=4)
+        
+        try:
+            with open(self.path, 'r+') as f:
+                fcntl.flock(f, fcntl.LOCK_EX)  # Bloqueia o arquivo
+                try:
+                    logs = json.load(f)
+                    logs.append(log_entry)
+                    f.seek(0)
+                    json.dump(logs, f, indent=4)
+                    f.truncate()
+                finally:
+                    fcntl.flock(f, fcntl.LOCK_UN)  # Libera o bloqueio
+        except (IOError, json.JSONDecodeError) as e:
+            raise RuntimeError(f"Erro ao registrar log: {str(e)}")
