@@ -20,7 +20,7 @@ setup(
     description='Sistema de recomendação de embeddings para grafos com IA',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/seuusuario/seurepositorio',
+    url='https://github.com/Williamsoars/AI-GEA.git',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
@@ -31,8 +31,8 @@ setup(
     ],
     keywords='graph embedding machine-learning recommendation',
     project_urls={
-        'Documentation': 'https://github.com/seuusuario/seurepositorio/docs',
-        'Source': 'https://github.com/seuusuario/seurepositorio',
-        'Tracker': 'https://github.com/seuusuario/seurepositorio/issues',
+        'Documentation': 'https://github.com/Williamsoars/AI-GEA.git',
+        'Source': 'https://github.com/Williamsoars/AI-GEA.git',
+        'Tracker': 'https://github.com/Williamsoars/AI-GEA.git',
     },
 )
