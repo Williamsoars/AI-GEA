@@ -131,6 +131,6 @@ Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
 
 ## Contato
 
-William Silva - [@seu_twitter](https://twitter.com/seu_twitter) - Williamkauasoaresdasilva@gmail.com
+William Silva - Williamkauasoaresdasilva@gmail.com
 
-Link do Projeto: [https://github.com/seuusuario/seurepositorio](https://github.com/seuusuario/seurepositorio)
+Link do Projeto: [https://github.com/Williamsoars/AI-GEA](https://github.com/Williamsoars/AI-GEA)
