@@ -8,7 +8,7 @@ Um sistema de recomendação de embeddings para grafos com IA, oferecendo múlti
 ## Instalação
 
 ```bash
-pip install graph-embedding-recommender
+pip install AI-GEA
 ```
 
 ## Funcionalidades
