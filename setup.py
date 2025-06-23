@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='graph_embedding_recommender',
-    version='0.1.0',  # MAJOR.MINOR.PATCH
+    name='ai-gea',  # Nome para instalação via pip (usamos -)
+    version='0.1.0',
     packages=find_packages(),
     install_requires=[
         'networkx>=2.5',
@@ -17,10 +17,10 @@ setup(
     python_requires='>=3.7',
     author='William Silva',
     author_email='Williamkauasoaresdasilva@gmail.com',
-    description='Sistema de recomendação de embeddings para grafos com IA',
+    description='AI-GEA: Artificial Intelligence for Graph Embedding Analysis',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/Williamsoars/AI-GEA.git',
+    url='https://github.com/seuusuario/ai-gea',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
@@ -29,10 +29,10 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
-    keywords='graph embedding machine-learning recommendation',
+    keywords='graph embedding machine-learning recommendation ai',
     project_urls={
-        'Documentation': 'https://github.com/Williamsoars/AI-GEA.git',
-        'Source': 'https://github.com/Williamsoars/AI-GEA.git',
-        'Tracker': 'https://github.com/Williamsoars/AI-GEA.git',
+        'Documentation': 'https://github.com/seuusuario/ai-gea/docs',
+        'Source': 'https://github.com/seuusuario/ai-gea',
+        'Tracker': 'https://github.com/seuusuario/ai-gea/issues',
     },
 )
