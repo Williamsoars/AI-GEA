@@ -8,6 +8,8 @@ from sklearn.model_selection import KFold
 import numpy as np
 class EmbeddingRecommenderInferencia:
     registered_embedding_methods = {}
+    def get_methods()
+        return registered_embedding_methods
 
     def register_embedding_method(name, func):
         """
