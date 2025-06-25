@@ -1,7 +1,19 @@
 import numpy as np
 import networkx as nx
-from recommender import 
-def extrair_features_grafo(G):
+import time
+import tracemalloc
+from typing import Dict, Any
+
+def extrair_features_grafo(G: nx.Graph) -> Dict[str, float]:
+    """
+    Extract features from a graph for embedding recommendation.
+    
+    Args:
+        G: NetworkX graph
+        
+    Returns:
+        Dictionary of graph features
+    """
     features = {
         "n_nodes": G.number_of_nodes(),
         "n_edges": G.number_of_edges(),
@@ -11,13 +23,14 @@ def extrair_features_grafo(G):
         "transitivity": nx.transitivity(G),
     }
     
-    # Tratamento para grafos desconectados
+    # Handle disconnected graphs
     if nx.is_connected(G):
         features["diameter"] = nx.diameter(G)
         features["avg_shortest_path"] = nx.average_shortest_path_length(G)
     else:
-        # Calcula para componentes conectados
-        features["diameter"] = max([nx.diameter(c) for c in nx.connected_components(G) if len(c) > 1])
+        # Calculate for connected components
+        features["diameter"] = max([nx.diameter(G.subgraph(c)) 
+                                  for c in nx.connected_components(G) if len(c) > 1])
         avg_paths = []
         for c in nx.connected_components(G):
             if len(c) > 1:
@@ -26,29 +39,27 @@ def extrair_features_grafo(G):
         features["avg_shortest_path"] = np.mean(avg_paths) if avg_paths else 0
     
     return features
-import time
-import tracemalloc
 
-def benchmark_methods(G, methods_dict):
+def benchmark_methods(G: nx.Graph, methods_dict: Dict[str, Callable]) -> Dict[str, Dict[str, Any]]:
     """
-    Mede o tempo de execução e uso de memória de cada método de embedding aplicado ao grafo G.
+    Measure execution time and memory usage of each embedding method applied to graph G.
 
-    Parâmetros:
+    Parameters:
     - G: networkx.Graph
-    - methods_dict: dict com pares {nome: funcao_de_embedding(G)}
+    - methods_dict: dict with {name: embedding_function(G)} pairs
 
-    Retorna:
-    - dict com tempo (segundos) e memória (KB) por método
+    Returns:
+    - dict with time (seconds) and memory (KB) per method
     """
     resultados = {}
 
     for nome, funcao in methods_dict.items():
         try:
-            # Início da medição de memória
+            # Start memory measurement
             tracemalloc.start()
 
             t0 = time.time()
-            _ = funcao(G)  # Executa o método
+            _ = funcao(G)  # Execute the method
             t1 = time.time()
 
             current, peak = tracemalloc.get_traced_memory()
