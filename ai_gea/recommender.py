@@ -1,40 +1,95 @@
 import numpy as np
 import pickle
 import os
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List, Callable, Any
+from sklearn.model_selection import KFold
 from .features import extrair_features_grafo
 from .fila_treinamento import FilaTreinamento
-from sklearn.model_selection import KFold
-import numpy as np
+
+class EmbeddingRecommender:
+    def __init__(self, modelo_path: str = "embedding_model.pkl", db_path: str = "fila_treinamento.db"):
+        self.modelo_path = modelo_path
+        self.db_path = db_path
+        self.embeddings = ["Node2Vec", "DeepWalk", "LINE", "HOPE", "Walklets", "NetMF", "GraRep"]
+        self._load_model()
+        self.fila = FilaTreinamento(db_path=self.db_path)
+
+    def _load_model(self) -> None:
+        if not os.path.exists(self.modelo_path):
+            raise FileNotFoundError(f"Model file not found: {self.modelo_path}")
+            
+        try:
+            with open(self.modelo_path, "rb") as f:
+                self.modelos = pickle.load(f)
+                
+            # Verify all embeddings have models
+            for emb in self.embeddings:
+                if emb not in self.modelos:
+                    raise ValueError(f"Model for embedding '{emb}' not found")
+        except (pickle.PickleError, EOFError) as e:
+            raise RuntimeError(f"Error loading model: {str(e)}")
+
+    def recomendar(self, G, metricas_resultantes: Dict = None) -> Tuple[str, Dict[str, float]]:
+        try:
+            feats = np.array(list(extrair_features_grafo(G).values())).reshape(1, -1)
+            scores = {emb: self.modelos[emb].predict(feats)[0] for emb in self.embeddings}
+            recomendado = max(scores.items(), key=lambda x: x[1])
+
+            if metricas_resultantes:
+                self.fila.adicionar(G, metricas_resultantes)
+
+            return recomendado[0], scores
+        except Exception as e:
+            raise RuntimeError(f"Error during recommendation: {str(e)}")
+
+    def treinar(self, grafos: List, resultados: List[Dict]) -> None:
+        """Train the recommendation model"""
+        # Implementation here
+        pass
+
+    def salvar_modelo(self, caminho: str) -> None:
+        """Save the trained model"""
+        with open(caminho, 'wb') as f:
+            pickle.dump(self.modelos, f)
+
 class EmbeddingRecommenderInferencia:
-    registered_embedding_methods = {}
-    def get_methods()
-        return registered_embedding_methods
+    registered_embedding_methods: Dict[str, Callable] = {}
 
-    def register_embedding_method(name, func):
+    @classmethod
+    def get_methods(cls) -> Dict[str, Callable]:
+        """Get all registered embedding methods"""
+        return cls.registered_embedding_methods
+
+    @classmethod
+    def register_embedding_method(cls, name: str, func: Callable) -> None:
         """
-        Registra um novo método de embedding com nome e função.
+        Register a new embedding method with name and function.
 
-        Parâmetros:
-        - name (str): nome do método (ex: "MeuNode2Vec")
-        - func (callable): função que recebe um grafo G e retorna um embedding (np.ndarray)
+        Parameters:
+        - name (str): method name (e.g., "MyNode2Vec")
+        - func (callable): function that receives a graph G and returns an embedding (np.ndarray)
         """
-        registered_embedding_methods[name] = func
-    def cross_validate(grafos, methods, k_folds=5, avaliar_metodos_fn=None):
+        if not callable(func):
+            raise ValueError("Function must be callable")
+        cls.registered_embedding_methods[name] = func
+
+    @classmethod
+    def cross_validate(cls, grafos: List, methods: List[str], k_folds: int = 5, 
+                      avaliar_metodos_fn: Callable = None) -> Dict[str, Dict[str, float]]:
         """
-        Executa validação cruzada dos métodos de embedding sobre os grafos fornecidos.
+        Perform cross-validation of embedding methods on provided graphs.
 
-        Parâmetros:
-        - grafos: lista de grafos (NetworkX)
-        - methods: lista de nomes de métodos (ex: ["Node2Vec", "DeepWalk"])
-        - k_folds: número de divisões
-        - avaliar_metodos_fn: função que avalia um grafo (deve aceitar: G, methods)
+        Parameters:
+        - grafos: list of graphs (NetworkX)
+        - methods: list of method names (e.g., ["Node2Vec", "DeepWalk"])
+        - k_folds: number of splits
+        - avaliar_metodos_fn: function that evaluates a graph (should accept: G, methods)
 
-        Retorna:
-        - dicionário com médias e desvios padrão por método.
+        Returns:
+        - dictionary with means and standard deviations per method.
         """
         if avaliar_metodos_fn is None:
-            raise ValueError("É necessário passar a função 'avaliar_metodos_fn' para avaliação dos grafos.")
+            raise ValueError("The 'avaliar_metodos_fn' function is required for graph evaluation.")
 
         kf = KFold(n_splits=k_folds, shuffle=True, random_state=42)
         scores = {method: [] for method in methods}
@@ -47,9 +102,9 @@ class EmbeddingRecommenderInferencia:
                 resultados = avaliar_metodos_fn(G, methods)
                 for metodo, metricas in resultados.items():
                     if isinstance(metricas, dict) and "f1_macro" in metricas:
-                        scores[metodo].append(metricas["f1_macro"])  # ou outra métrica desejada
+                        scores[metodo].append(metricas["f1_macro"])
 
-        # Calcular médias e desvios
+        # Calculate means and standard deviations
         resumo = {
             metodo: {
                 "media": np.mean(vals),
@@ -59,36 +114,3 @@ class EmbeddingRecommenderInferencia:
         }
 
         return resumo
-    def __init__(self, modelo_path="embedding_model.pkl", db_path="fila_treinamento.db"):
-        self.modelo_path = modelo_path
-        self.db_path = db_path
-        self.embeddings = ["Node2Vec", "DeepWalk", "LINE", "HOPE", "Walklets", "NetMF", "GraRep"]
-        self._load_model()
-        self.fila = FilaTreinamento(db_path=self.db_path)
-
-    def _load_model(self):
-        if not os.path.exists(self.modelo_path):
-            raise FileNotFoundError(f"Arquivo de modelo não encontrado: {self.modelo_path}")
-            
-        try:
-            with open(self.modelo_path, "rb") as f:
-                self.modelos = pickle.load(f)
-                
-            # Verifica se todos os embeddings têm modelos
-            for emb in self.embeddings:
-                if emb not in self.modelos:
-                    raise ValueError(f"Modelo para embedding '{emb}' não encontrado")
-        except (pickle.PickleError, EOFError) as e:
-            raise RuntimeError(f"Erro ao carregar modelo: {str(e)}")
-    def recomendar(self, G, metricas_resultantes=None) -> Tuple[str, Dict[str, float]]:
-        try:
-            feats = np.array(list(extrair_features_grafo(G).values())).reshape(1, -1)
-            scores = {emb: self.modelos[emb].predict(feats)[0] for emb in self.embeddings}
-            recomendado = max(scores.items(), key=lambda x: x[1])
-
-            if metricas_resultantes:
-                self.fila.adicionar(G, metricas_resultantes)
-
-            return recomendado[0], scores
-        except Exception as e:
-            raise RuntimeError(f"Erro durante a recomendação: {str(e)}")
