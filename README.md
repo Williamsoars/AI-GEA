@@ -26,7 +26,7 @@ pip install AI-GEA
 
 ```python
 import networkx as nx
-from ai-gea import Recommender
+from AI-GEA import Recommender
 
 # Crie um grafo de exemplo
 G = nx.karate_club_graph()
@@ -44,7 +44,7 @@ print(f"Scores: {scores}")
 ### 2. Treinamento Personalizado
 
 ```python
-from ai-gea import Recommender
+from AI-GEA import Recommender
 import networkx as nx
 
 # Grafos de treinamento
@@ -61,7 +61,7 @@ recommender.salvar_modelo("meu_modelo.pkl")
 ### 3. Usando a Fila de Treinamento
 
 ```python
-from ai-gea import FilaTreinamento, treinar_com_fila
+from AI-GEA import Fila_treinamento, treinar_com_fila
 import networkx as nx
 
 # Adicione grafos à fila
