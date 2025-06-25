@@ -1,7 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ai-gea',  # Nome para instalação via pip (usamos -)
+    name='ai-gea',
+    packages=['ai_gea'],  # Lista explícita (ou use find_packages())
+    package_dir={'ai_gea': 'ai_gea'},
     version='0.1.0',
     packages=find_packages(),
     install_requires=[
