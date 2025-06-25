@@ -13,7 +13,7 @@ from .features import extrair_features_grafo
 from .plugins import registrar_metrica, calcular_metricas_personalizadas
 from .logger import Logger
 from .utils import calcular_deformacao
-from .visual import visualizar_embedding, vi
+from .visual import plot_embedding, plot_comparacao_scores
 
 # Aliases para facilitar
 AI_GEA = EmbeddingRecommender
@@ -30,5 +30,6 @@ __all__ = [
     'Logger'
     'utils'
     'calcular_deformacao'
-    'visualizar_embedding'
+    'plot_embedding'
+    'plot_comparacao_scores'
 ]
