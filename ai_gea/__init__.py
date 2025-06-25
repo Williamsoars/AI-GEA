@@ -12,6 +12,8 @@ from .graph_loader import carregar_grafo
 from .features import extrair_features_grafo
 from .plugins import registrar_metrica, calcular_metricas_personalizadas
 from .logger import Logger
+from .utils import calcular_deformacao
+from .visual import visualizar_embedding, vi
 
 # Aliases para facilitar
 AI_GEA = EmbeddingRecommender
@@ -26,4 +28,7 @@ __all__ = [
     'registrar_metrica',
     'calcular_metricas_personalizadas',
     'Logger'
+    'utils'
+    'calcular_deformacao'
+    'visualizar_embedding'
 ]
