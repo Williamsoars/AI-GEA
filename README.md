@@ -61,7 +61,7 @@ recommender.salvar_modelo("meu_modelo.pkl")
 ### 3. Usando a Fila de Treinamento
 
 ```python
-from AI-GEA import Fila_treinamento, treinar_com_fila
+from AI-GEA import Fila_treinamento, Training
 import networkx as nx
 
 # Adicione grafos à fila
