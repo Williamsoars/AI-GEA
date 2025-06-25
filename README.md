@@ -90,7 +90,7 @@ registrar_metrica("clustering_dim", minha_metrica)
 ### 5. Carregando Grafos de Arquivos
 
 ```python
-from AI-GEA.Graph_loader import carregar_grafo
+from AI-GEA.Graph_loader import Carregar_grafo
 
 G = carregar_grafo("meu_grafo.graphml")
 ```
