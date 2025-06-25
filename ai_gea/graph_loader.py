@@ -1,9 +1,26 @@
 import os
 import networkx as nx
+from typing import Union
 
-def carregar_grafo(caminho):
+def carregar_grafo(caminho: str) -> Union[nx.Graph, nx.DiGraph]:
+    """
+    Load a graph from various file formats.
+    
+    Supported formats: .graphml, .gexf, .gml, .edgelist, .adjlist
+    
+    Args:
+        caminho: Path to graph file
+        
+    Returns:
+        NetworkX graph object
+        
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        ValueError: If format is not supported
+        RuntimeError: If there's an error loading the graph
+    """
     if not os.path.exists(caminho):
-        raise FileNotFoundError(f"Arquivo não encontrado: {caminho}")
+        raise FileNotFoundError(f"File not found: {caminho}")
     
     ext = os.path.splitext(caminho)[-1].lower()
     try:
@@ -18,6 +35,6 @@ def carregar_grafo(caminho):
         elif ext == '.adjlist':
             return nx.read_adjlist(caminho)
         else:
-            raise ValueError(f'Formato de grafo não suportado: {ext}')
+            raise ValueError(f'Unsupported graph format: {ext}')
     except Exception as e:
-        raise RuntimeError(f"Erro ao carregar grafo do arquivo {caminho}: {str(e)}")
+        raise RuntimeError(f"Error loading graph from file {caminho}: {str(e)}")
