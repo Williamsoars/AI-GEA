@@ -76,7 +76,7 @@ treinar_com_fila(modelo_path="modelo_treinado.pkl")
 ### 4. Adicionando Métricas Personalizadas
 
 ```python
-from ai-gea.plugins import registrar_metrica
+from AI-GEA.plugins import Plugins
 import networkx as nx
 
 def minha_metrica(G, embedding):
@@ -90,7 +90,7 @@ registrar_metrica("clustering_dim", minha_metrica)
 ### 5. Carregando Grafos de Arquivos
 
 ```python
-from graph_embedding_recommender.graph_loader import carregar_grafo
+from AI-GEA.graph_loader import carregar_grafo
 
 G = carregar_grafo("meu_grafo.graphml")
 ```
