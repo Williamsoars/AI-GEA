@@ -1,6 +1,6 @@
 from tqdm import tqdm
 import logging
-from .recomendador import EmbeddingRecommender
+from .graph_embedding_recommender import EmbeddingRecommender
 from .fila_treinamento import FilaTreinamento
 
 def treinar_com_fila(modelo_path="embedding_model.pkl", db_path="fila_treinamento.db"):
