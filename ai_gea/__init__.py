@@ -5,17 +5,18 @@ __version__ = "0.1.0"
 __author__ = "William Silva"
 __email__ = "Williamkauasoaresdasilva@gmail.com"
 
-# Importe TUDO que será acessível ao usuário diretamente do pacote
+# Import everything that will be accessible to users directly from the package
 from .recommender import EmbeddingRecommender, EmbeddingRecommenderInferencia
 from .fila_treinamento import FilaTreinamento
 from .graph_loader import carregar_grafo
-from .features import extrair_features_grafo
+from .features import extrair_features_grafo, benchmark_methods
 from .plugins import registrar_metrica, calcular_metricas_personalizadas
 from .logger import Logger
 from .utils import calcular_deformacao
 from .visual import plot_embedding, plot_comparacao_scores
+from .training import treinar_com_fila
 
-# Aliases para facilitar
+# Aliases for convenience
 AI_GEA = EmbeddingRecommender
 
 __all__ = [
@@ -25,11 +26,12 @@ __all__ = [
     'FilaTreinamento',
     'carregar_grafo',
     'extrair_features_grafo',
+    'benchmark_methods',
     'registrar_metrica',
     'calcular_metricas_personalizadas',
-    'Logger'
-    'utils'
-    'calcular_deformacao'
-    'plot_embedding'
-    'plot_comparacao_scores'
+    'Logger',
+    'calcular_deformacao',
+    'plot_embedding',
+    'plot_comparacao_scores',
+    'treinar_com_fila'
 ]
