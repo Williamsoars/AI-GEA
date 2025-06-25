@@ -1,34 +1,29 @@
 """
 AI-GEA - Artificial Intelligence for Graph Embedding Analysis
-
-Um sistema avançado para análise e recomendação de métodos de embedding para grafos.
 """
 __version__ = "0.1.0"
 __author__ = "William Silva"
 __email__ = "Williamkauasoaresdasilva@gmail.com"
-__license__ = "MIT"
 
-# Importações principais
-from .recomendador import EmbeddingRecommender, EmbeddingRecommenderInferencia
+# Importe TUDO que será acessível ao usuário diretamente do pacote
+from .recommender import EmbeddingRecommender, EmbeddingRecommenderInferencia
 from .fila_treinamento import FilaTreinamento
-from .training import treinar_com_fila
-from .features import extrair_features_grafo
 from .graph_loader import carregar_grafo
-from .logger import Logger
+from .features import extrair_features_grafo
 from .plugins import registrar_metrica, calcular_metricas_personalizadas
+from .logger import Logger
 
-# Suporte para importação direta do nome principal
-AI_GEA = EmbeddingRecommender  # Alias para o principal
+# Aliases para facilitar
+AI_GEA = EmbeddingRecommender
 
 __all__ = [
-    'AI_GEA',
     'EmbeddingRecommender',
     'EmbeddingRecommenderInferencia',
+    'AI_GEA',
     'FilaTreinamento',
-    'treinar_com_fila',
-    'extrair_features_grafo',
     'carregar_grafo',
-    'Logger',
+    'extrair_features_grafo',
     'registrar_metrica',
     'calcular_metricas_personalizadas',
+    'Logger'
 ]
