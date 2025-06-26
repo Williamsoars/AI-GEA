@@ -1,11 +1,18 @@
-from typing import Dict, Callable, Any
+
 import networkx as nx
 import numpy as np
+from typing import Dict, Callable, TypeVar, Any
 
 # Dicionário para armazenar métricas personalizadas
 custom_metrics: Dict[str, Callable[[nx.Graph, np.ndarray], Any]] = {}
+T = TypeVar('T')  # Para tipos genéricos na métrica
 
-def registrar_metrica(nome: str, funcao: Callable[[nx.Graph, np.ndarray], Any]) -> None:
+# Tipo específico para funções de métrica
+MetricFunction = Callable[[nx.Graph, np.ndarray], T]
+
+custom_metrics: Dict[str, MetricFunction] = {}
+
+def registrar_metrica(nome: str, funcao: MetricFunction) -> None:
     """Registra uma nova métrica personalizada.
     
     Args:
