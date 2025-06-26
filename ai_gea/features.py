@@ -1,10 +1,9 @@
-import numpy as np
-import networkx as nx
-import time
-import tracemalloc
-from typing import Dict, Any
+from typing import TYPE_CHECKING, Dict, Any
+if TYPE_CHECKING:
+    from .recommender import EmbeddingRecommender  # Só para type checking
 
-def extrair_features_grafo(G: nx.Graph) -> Dict[str, float]:
+def extrair_features_grafo(G: nx.Graph) -> Dict[str, Union[float, int]]:
+    """Retorno tipado mais precisamente"""
     """
     Extract features from a graph for embedding recommendation.
     
