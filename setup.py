@@ -10,6 +10,10 @@ setup(
     author_email='Williamkauasoaresdasilva@gmail.com',
     description='AI-GEA: Artificial Intelligence for Graph Embedding Analysis',
     long_description=long_description,
+    package_data={
+        'ai_gea': ['py.typed'],
+    },
+    zip_safe=False,
     long_description_content_type='text/markdown',
     url='https://github.com/Williamsoars/AI-GEA',
     packages=find_packages(),
