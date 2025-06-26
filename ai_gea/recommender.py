@@ -1,35 +1,20 @@
+from typing import Dict, Tuple, List, Callable, Optional, Union
 import numpy as np
 import pickle
 import os
-from typing import Dict, Tuple, List, Callable, Any
-from sklearn.model_selection import KFold
-from .features import extrair_features_grafo
-from .fila_treinamento import FilaTreinamento
+from sklearn.base import BaseEstimator  # Adicione esta importação
 
 class EmbeddingRecommender:
     def __init__(self, modelo_path: str = "embedding_model.pkl", db_path: str = "fila_treinamento.db"):
         self.modelo_path = modelo_path
         self.db_path = db_path
-        self.embeddings = ["Node2Vec", "DeepWalk", "LINE", "HOPE", "Walklets", "NetMF", "GraRep"]
+        self.embeddings: List[str] = ["Node2Vec", "DeepWalk", "LINE", "HOPE", "Walklets", "NetMF", "GraRep"]
+        self.modelos: Dict[str, BaseEstimator] = {}  # Tipo explícito para modelos
         self._load_model()
         self.fila = FilaTreinamento(db_path=self.db_path)
 
-    def _load_model(self) -> None:
-        if not os.path.exists(self.modelo_path):
-            raise FileNotFoundError(f"Model file not found: {self.modelo_path}")
-            
-        try:
-            with open(self.modelo_path, "rb") as f:
-                self.modelos = pickle.load(f)
-                
-            # Verify all embeddings have models
-            for emb in self.embeddings:
-                if emb not in self.modelos:
-                    raise ValueError(f"Model for embedding '{emb}' not found")
-        except (pickle.PickleError, EOFError) as e:
-            raise RuntimeError(f"Error loading model: {str(e)}")
-
-    def recomendar(self, G, metricas_resultantes: Dict = None) -> Tuple[str, Dict[str, float]]:
+    def recomendar(self, G: nx.Graph, metricas_resultantes: Optional[Dict[str, Dict[str, float]]] = None) -> Tuple[str, Dict[str, float]]:
+        """Método com type hints completos"""
         try:
             feats = np.array(list(extrair_features_grafo(G).values())).reshape(1, -1)
             scores = {emb: self.modelos[emb].predict(feats)[0] for emb in self.embeddings}
@@ -46,8 +31,21 @@ class EmbeddingRecommender:
         """Train the recommendation model"""
         # Implementation here
         pass
-
-    def salvar_modelo(self, caminho: str) -> None:
+    def _load_model(self) -> None:
+        if not os.path.exists(self.modelo_path):
+            raise FileNotFoundError(f"Model file not found: {self.modelo_path}")
+            
+        try:
+            with open(self.modelo_path, "rb") as f:
+                self.modelos = pickle.load(f)
+                
+            # Verify all embeddings have models
+            for emb in self.embeddings:
+                if emb not in self.modelos:
+                    raise ValueError(f"Model for embedding '{emb}' not found")
+        except (pickle.PickleError, EOFError) as e:
+            raise RuntimeError(f"Error loading model: {str(e)}")
+      def salvar_modelo(self, caminho: str) -> None:
         """Save the trained model"""
         with open(caminho, 'wb') as f:
             pickle.dump(self.modelos, f)
