@@ -45,7 +45,7 @@ class EmbeddingRecommender:
                     raise ValueError(f"Model for embedding '{emb}' not found")
         except (pickle.PickleError, EOFError) as e:
             raise RuntimeError(f"Error loading model: {str(e)}")
-      def salvar_modelo(self, caminho: str) -> None:
+    def salvar_modelo(self, caminho: str) -> None:
         """Save the trained model"""
         with open(caminho, 'wb') as f:
             pickle.dump(self.modelos, f)
