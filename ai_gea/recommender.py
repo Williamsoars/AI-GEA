@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List, Callable, Optional
+from typing import Dict, Tuple, List, Optional
 import numpy as np
 import pickle
 import os
@@ -6,15 +6,14 @@ import networkx as nx
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
+from .fila_treinamento import FilaTreinamento
+from .utils import extrair_features_grafo  # Certifique-se de ter essa função no utils.py
 
 class EmbeddingRecommender:
     def __init__(self, modelo_path: str = "embedding_model.pkl", db_path: str = "fila_treinamento.db"):
-        """
-        Inicializa o sistema de recomendação de embeddings.
-        """
         self.modelo_path = modelo_path
         self.db_path = db_path
         self.embeddings: List[str] = ["Node2Vec", "DeepWalk", "LINE", "HOPE", "Walklets", "NetMF", "GraRep"]
@@ -23,21 +22,8 @@ class EmbeddingRecommender:
         self.fila = FilaTreinamento(db_path=self.db_path)
 
     def recomendar(self, G: nx.Graph, metricas_resultantes: Optional[Dict[str, Dict[str, float]]] = None) -> Tuple[str, Dict[str, float]]:
-        """
-        Retorna o melhor método de embedding com base nas features do grafo e nas métricas (f1, stress, norma...).
-
-        Parâmetros:
-        - G: grafo de entrada
-        - metricas_resultantes: dicionário com métricas por método (opcional)
-
-        Retorna:
-        - nome do método recomendado
-        - dicionário com probabilidades por método
-        """
         try:
             feats = list(extrair_features_grafo(G).values())
-
-            # Features adicionais com métricas
             metricas = []
             for metodo in self.embeddings:
                 m = metricas_resultantes.get(metodo, {}) if metricas_resultantes else {}
@@ -59,18 +45,11 @@ class EmbeddingRecommender:
             return pred, scores
 
         except Exception as e:
-            raise RuntimeError(f"Erro na recomendação: {str(e)}")
+            raise RuntimeError(f"Erro na recomendacao: {str(e)}")
 
     def treinar(self, grafos: List[nx.Graph], resultados: List[Dict[str, Dict[str, float]]]) -> None:
-        """
-        Treina um classificador para prever o melhor método de embedding.
-
-        Parâmetros:
-        - grafos: lista de grafos
-        - resultados: lista de dicionários com métricas para cada método em cada grafo
-        """
         if len(grafos) != len(resultados):
-            raise ValueError("O número de grafos deve ser igual ao número de entradas de resultados.")
+            raise ValueError("O numero de grafos deve ser igual ao numero de resultados.")
 
         X, y = [], []
 
@@ -84,7 +63,7 @@ class EmbeddingRecommender:
             }
 
             if not melhores:
-                continue  # Ignora grafos sem F1 válido
+                continue
 
             melhor_metodo = max(melhores.items(), key=lambda x: x[1])[0]
 
@@ -111,41 +90,25 @@ class EmbeddingRecommender:
         clf.fit(X, y)
         self.modelos = {"classificador": clf}
         self.salvar_modelo(self.modelo_path)
+
     def treinar_fila(self) -> None:
-    """
-    Treina o modelo de recomendação usando todos os dados armazenados na fila.
+        try:
+            X, y = self.fila.obter_X_y(extrair_features_grafo, self.embeddings)
+            if len(X) == 0:
+                raise ValueError("A fila nao contem dados suficientes para treinamento.")
 
-    Requer que:
-    - Os grafos na fila tenham métricas válidas.
-    - A função extrair_features_grafo esteja disponível no escopo.
-    """
-    try:
-        X, y = self.fila.obter_X_y(extrair_features_grafo, self.embeddings)
-        if len(X) == 0:
-            raise ValueError("A fila não contém dados suficientes para treinamento.")
+            clf = Pipeline([
+                ("scaler", StandardScaler()),
+                ("modelo", RandomForestClassifier(n_estimators=200, random_state=42))
+            ])
+            clf.fit(X, y)
+            self.modelos = {"classificador": clf}
+            self.salvar_modelo(self.modelo_path)
+            print(f"[INFO] Modelo treinado com {len(X)} instancias da fila.")
+        except Exception as e:
+            raise RuntimeError(f"Erro ao treinar a partir da fila: {e}")
 
-        clf = Pipeline([
-            ("scaler", StandardScaler()),
-            ("modelo", RandomForestClassifier(n_estimators=200, random_state=42))
-        ])
-        clf.fit(X, y)
-        self.modelos = {"classificador": clf}
-        self.salvar_modelo(self.modelo_path)
-        print(f"[INFO] Modelo treinado com {len(X)} instâncias da fila.")
-    except Exception as e:
-        raise RuntimeError(f"Erro ao treinar a partir da fila: {e}")
     def cross_validate_modelo(self, grafos: List[nx.Graph], resultados: List[Dict[str, Dict[str, float]]], folds: int = 5) -> str:
-        """
-        Avalia o modelo por validação cruzada estratificada.
-
-        Parâmetros:
-        - grafos: lista de grafos
-        - resultados: lista de métricas por grafo
-        - folds: número de partições (k-fold)
-
-        Retorna:
-        - Relatório completo de classificação por fold.
-        """
         X, y = [], []
 
         for G, metrica_dict in zip(grafos, resultados):
@@ -195,24 +158,16 @@ class EmbeddingRecommender:
         return classification_report(y_true_all, y_pred_all, digits=4)
 
     def _load_model(self) -> None:
-        """
-        Carrega o modelo salvo do disco, se existir.
-        """
         if not os.path.exists(self.modelo_path):
-            return  # Nenhum modelo treinado ainda
-
+            return
         try:
             with open(self.modelo_path, "rb") as f:
                 self.modelos = pickle.load(f)
             if "classificador" not in self.modelos:
-                raise ValueError("Modelo carregado não contém 'classificador'")
+                raise ValueError("Modelo carregado nao contem 'classificador'")
         except (pickle.PickleError, EOFError) as e:
             raise RuntimeError(f"Erro ao carregar modelo: {str(e)}")
 
     def salvar_modelo(self, caminho: str) -> None:
-        """
-        Salva o modelo no caminho especificado.
-        """
         with open(caminho, 'wb') as f:
             pickle.dump(self.modelos, f)
-
