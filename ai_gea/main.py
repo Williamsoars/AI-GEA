@@ -1,6 +1,7 @@
 import networkx as nx
-from .recommender import EmbeddingRecommender
+from .default_embeddings import default_embeddings
 from .evaluation import avaliar_metodos
+from .recommender import Recommender
 from .logger import Logger
 
 def avaliar_grafos_base():
@@ -9,31 +10,34 @@ def avaliar_grafos_base():
         nx.cycle_graph(32),
         nx.path_graph(32),
     ]
-    return [
-        avaliar_metodos(G, ["Node2Vec", "DeepWalk", "LINE"], n_execucoes=5)
+    metodos = list(default_embeddings.keys())
+    resultados = [
+        avaliar_metodos(G, metodos, default_embeddings, labels_true=nx.get_node_attributes(G, 'club'), n_execucoes=3)
         for G in grafos
     ]
+    return grafos, resultados
 
 def main():
     try:
         # Treinamento
-        grafos = avaliar_grafos_base()
-        resultados = [resultado for resultado in grafos]
+        grafos, resultados = avaliar_grafos_base()
         
-        ia = EmbeddingRecommender()
+        ia = Recommender()
         ia.treinar(grafos, resultados)
 
-        # Recomendação
+        # Recomendação para novo grafo
         G_novo = nx.balanced_tree(2, 4)
-        metodo_recomendado, scores = ia.recomendar(G_novo)
-        
+        metodos = list(default_embeddings.keys())
+        metricas_novo = avaliar_metodos(G_novo, metodos, default_embeddings, labels_true=None, n_execucoes=3)
+        metodo_recomendado, scores = ia.recomendar(G_novo, metricas_resultantes=metricas_novo)
+
         print("Método recomendado:", metodo_recomendado)
         print("Scores previstos:", scores)
 
         # Log
         logger = Logger()
         logger.log("BalancedTree", scores, metodo_recomendado)
-        
+
     except Exception as e:
         print(f"Erro durante a execução: {str(e)}")
         raise
