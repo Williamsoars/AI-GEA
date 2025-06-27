@@ -1,7 +1,7 @@
 import networkx as nx
-from graph_embedding_recommender.recommender import EmbeddingRecommender
-from graph_embedding_evaluator.evaluation import avaliar_metodos
-from graph_embedding_recommender.logger import Logger
+from .recommender import EmbeddingRecommender
+from .evaluation import avaliar_metodos
+from .logger import Logger
 
 def avaliar_grafos_base():
     grafos = [
