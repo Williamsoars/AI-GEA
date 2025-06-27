@@ -111,7 +111,29 @@ class EmbeddingRecommender:
         clf.fit(X, y)
         self.modelos = {"classificador": clf}
         self.salvar_modelo(self.modelo_path)
+    def treinar_fila(self) -> None:
+    """
+    Treina o modelo de recomendação usando todos os dados armazenados na fila.
 
+    Requer que:
+    - Os grafos na fila tenham métricas válidas.
+    - A função extrair_features_grafo esteja disponível no escopo.
+    """
+    try:
+        X, y = self.fila.obter_X_y(extrair_features_grafo, self.embeddings)
+        if len(X) == 0:
+            raise ValueError("A fila não contém dados suficientes para treinamento.")
+
+        clf = Pipeline([
+            ("scaler", StandardScaler()),
+            ("modelo", RandomForestClassifier(n_estimators=200, random_state=42))
+        ])
+        clf.fit(X, y)
+        self.modelos = {"classificador": clf}
+        self.salvar_modelo(self.modelo_path)
+        print(f"[INFO] Modelo treinado com {len(X)} instâncias da fila.")
+    except Exception as e:
+        raise RuntimeError(f"Erro ao treinar a partir da fila: {e}")
     def cross_validate_modelo(self, grafos: List[nx.Graph], resultados: List[Dict[str, Dict[str, float]]], folds: int = 5) -> str:
         """
         Avalia o modelo por validação cruzada estratificada.
