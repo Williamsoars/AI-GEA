@@ -1,0 +1,151 @@
+"""
+analysis.py - Advanced embedding analysis and statistical evaluation
+"""
+
+import networkx as nx
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import pandas as pd
+from scipy.spatial.distance import pdist
+from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.stats import shapiro, levene, f_oneway, kruskal
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from typing import Dict, List, Optional
+
+from .default_embeddings import default_embeddings
+from .evaluation import calcular_stress, reconstruction_error
+
+def plot_dendrogram(df: pd.DataFrame) -> None:
+    """Plot hierarchical clustering dendrogram of graph types based on metric similarity."""
+    mean_values = df.groupby("Tipo")["Métrica"].mean()
+    dist = pdist(mean_values.values.reshape(-1, 1), metric='euclidean')
+    linkage_matrix = linkage(dist, method='ward')
+    
+    plt.figure(figsize=(10, 5))
+    dendrogram(linkage_matrix, labels=mean_values.index.tolist(), leaf_rotation=45)
+    plt.title("Dendrograma de Similaridade entre Estruturas de Grafos")
+    plt.ylabel("Distância Euclidiana (entre médias)")
+    plt.tight_layout()
+    plt.show()
+
+def plot_heatmap_posthoc(p_matrix: pd.DataFrame, title: str) -> None:
+    """Plot heatmap of post-hoc test results."""
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(p_matrix, annot=True, fmt=".3f", cmap="coolwarm_r",
+                cbar_kws={'label': 'p-valor ajustado'}, linewidths=.5)
+    plt.title(title)
+    plt.yticks(rotation=0)
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.show()
+
+def calcular_f1_clusterizacao(embedding: Dict, n_clusters: int = 2) -> float:
+    """Calculate clustering quality using silhouette score."""
+    km = KMeans(n_clusters=n_clusters)
+    labels = km.fit_predict(list(embedding.values()))
+    return silhouette_score(list(embedding.values()), labels)
+
+def analise_estatistica(df: pd.DataFrame) -> None:
+    """Perform comprehensive statistical analysis of embedding results."""
+    print("\n=== Análise Estatística ===")
+    
+    grupos = [df[df["Tipo"] == tipo]["Métrica"].values for tipo in df["Tipo"].unique()]
+
+    print("\nTeste de normalidade (Shapiro-Wilk):")
+    for tipo in df["Tipo"].unique():
+        stat, p = shapiro(df[df["Tipo"] == tipo]["Métrica"])
+        print(f"{tipo}: p = {p:.4f} {'(normal)' if p > 0.05 else '(não normal)'}")
+
+    stat, p = levene(*grupos)
+    print(f"\nLevene (homocedasticidade): p = {p:.4f} {'(variâncias iguais)' if p > 0.05 else '(variâncias diferentes)'}")
+
+    print("\nANOVA:")
+    modelo = ols("Métrica ~ C(Tipo)", data=df).fit()
+    anova_result = sm.stats.anova_lm(modelo, typ=2)
+    print(anova_result)
+
+    print("\nKruskal-Wallis:")
+    stat, p = kruskal(*grupos)
+    print(f"H = {stat:.4f}, p = {p:.4f} {'(diferença significativa)' if p < 0.05 else '(sem diferença)'}")
+
+    print("\nPost-hoc (Tukey HSD ou Dunn):")
+    normalidade = all(shapiro(df[df["Tipo"] == tipo]["Métrica"])[1] > 0.05 for tipo in df["Tipo"].unique())
+    
+    if normalidade:
+        tukey = pairwise_tukeyhsd(df['Métrica'], df['Tipo'])
+        print(tukey)
+        tukey_p = pd.DataFrame(np.ones((len(tukey.groupsunique), len(tukey.groupsunique))),
+                               columns=tukey.groupsunique, index=tukey.groupsunique)
+        for i in range(len(tukey.meandiffs)):
+            g1 = tukey.groupsunique[tukey.pairindices[i][0]]
+            g2 = tukey.groupsunique[tukey.pairindices[i][1]]
+            tukey_p.loc[g1, g2] = tukey.pvalues[i]
+            tukey_p.loc[g2, g1] = tukey.pvalues[i]
+        plot_heatmap_posthoc(tukey_p, "Heatmap Post-hoc (Tukey HSD)")
+    else:
+        dunn = posthoc_dunn(df, val_col='Métrica', group_col='Tipo', p_adjust='bonferroni')
+        print("\nDunn com correção Bonferroni:")
+        print(dunn)
+        plot_heatmap_posthoc(dunn, "Heatmap Post-hoc (Dunn-Bonferroni)")
+
+    plot_dendrogram(df)
+
+def avaliar_embeddings(
+    modelo_nome: str,
+    metrica_nome: str = "f1",
+    grafos_tipos: List[str] = None,
+    n_reps: int = 10
+) -> pd.DataFrame:
+    """
+    Evaluate embeddings across different graph types with statistical analysis.
+    
+    Args:
+        modelo_nome: Name of embedding method (must exist in default_embeddings)
+        metrica_nome: Metric to evaluate ("f1", "stress", or "reconstruction")
+        grafos_tipos: List of graph types to evaluate
+        n_reps: Number of repetitions per graph type
+        
+    Returns:
+        DataFrame with evaluation results
+    """
+    if grafos_tipos is None:
+        grafos_tipos = ["complete", "cycle", "path", "star", "wheel", "tree", "barbell", "grid"]
+    
+    if modelo_nome not in default_embeddings:
+        raise ValueError(f"Modelo {modelo_nome} não encontrado nos embeddings padrão")
+    
+    resultados = []
+
+    for tipo in grafos_tipos:
+        for _ in range(n_reps):
+            G = gerar_grafo(tipo)
+            G = nx.convert_node_labels_to_integers(G)
+            
+            embedding = default_embeddings[modelo_nome](G)
+
+            if metrica_nome == "stress":
+                valor = calcular_stress(G, embedding)
+            elif metrica_nome == "f1":
+                valor = calcular_f1_clusterizacao(embedding)
+            elif metrica_nome == "reconstruction":
+                valor = reconstruction_error(G, embedding)
+            else:
+                raise ValueError("Métrica não reconhecida.")
+
+            resultados.append({"Tipo": tipo, "Métrica": valor})
+
+    df = pd.DataFrame(resultados)
+    plt.figure(figsize=(15, 6))
+    sns.boxplot(data=df, x="Tipo", y="Métrica")
+    plt.title(f"{metrica_nome.capitalize()} distribution by graph structure in {modelo_nome}")
+    plt.xticks(rotation=45)
+    plt.grid(True, linestyle="--", alpha=0.4)
+    plt.tight_layout()
+    plt.show()
+
+    analise_estatistica(df)
+    return df
