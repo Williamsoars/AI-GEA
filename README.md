@@ -123,7 +123,7 @@ Classe principal para recomendações de embeddings.
 - `treinar(grafos, resultados)`: Treina o modelo com grafos e resultados conhecidos
 - `salvar_modelo(caminho)`: Salva o modelo treinado em um arquivo
 
-### `FilaTreinamento`
+### 7. FilaTreinamento
 
 Gerencia uma fila de grafos para treinamento assíncrono.
 
@@ -132,7 +132,7 @@ Gerencia uma fila de grafos para treinamento assíncrono.
 - `obter_todos()`: Retorna todos os grafos na fila
 - `limpar()`: Remove todos os grafos da fila
 
-## Contribuição
+### 8. Contribuição
 
 Contribuições são bem-vindas! Siga estes passos:
 
@@ -142,11 +142,11 @@ Contribuições são bem-vindas! Siga estes passos:
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-## Licença
+### 9. Licença
 
 Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
 
-## Contato
+### 10. Contato
 
 William Silva - Williamkauasoaresdasilva@gmail.com
 
