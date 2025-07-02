@@ -94,7 +94,24 @@ from AI-GEA.Graph_loader import Carregar_grafo
 
 G = carregar_grafo("meu_grafo.graphml")
 ```
+### 6. Análise Estatística de Embeddings
 
+```python
+from AI-GEA import avaliar_embeddings
+
+# Avalie diferentes embeddings em vários tipos de grafos
+resultados = avaliar_embeddings(
+    modelo_nome="Node2Vec",
+    metrica_nome="f1",
+    grafos_tipos=["complete", "cycle", "tree"],
+    n_reps=5
+)
+
+# A função automaticamente gera:
+# - Boxplots comparativos
+# - Testes estatísticos (ANOVA/Kruskal-Wallis)
+# - Análise post-hoc
+# - Dendrograma de similaridade
 ## API de Referência
 
 ### `EmbeddingRecommender`
