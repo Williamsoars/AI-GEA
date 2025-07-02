@@ -113,9 +113,9 @@ resultados = avaliar_embeddings(
 # - Análise post-hoc
 # - Dendrograma de similaridade
 ## API de Referência
-
-### `EmbeddingRecommender`
-
+```
+### 7. EmbeddingRecommender
+```
 Classe principal para recomendações de embeddings.
 
 **Métodos**:
@@ -123,7 +123,7 @@ Classe principal para recomendações de embeddings.
 - `treinar(grafos, resultados)`: Treina o modelo com grafos e resultados conhecidos
 - `salvar_modelo(caminho)`: Salva o modelo treinado em um arquivo
 
-### 7. FilaTreinamento
+### FilaTreinamento
 
 Gerencia uma fila de grafos para treinamento assíncrono.
 
@@ -131,9 +131,9 @@ Gerencia uma fila de grafos para treinamento assíncrono.
 - `adicionar(grafo, metricas)`: Adiciona um grafo à fila de treinamento
 - `obter_todos()`: Retorna todos os grafos na fila
 - `limpar()`: Remove todos os grafos da fila
-
+```
 ### 8. Contribuição
-
+```
 Contribuições são bem-vindas! Siga estes passos:
 
 1. Faça um fork do projeto
@@ -141,13 +141,13 @@ Contribuições são bem-vindas! Siga estes passos:
 3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
-
+```
 ### 9. Licença
-
+```
 Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
-
+```
 ### 10. Contato
-
+```
 William Silva - Williamkauasoaresdasilva@gmail.com
 
 Link do Projeto: [https://github.com/Williamsoars/AI-GEA](https://github.com/Williamsoars/AI-GEA)
