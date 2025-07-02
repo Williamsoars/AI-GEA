@@ -15,9 +15,12 @@ from .logger import Logger
 from .utils import calcular_deformacao
 from .visual import plot_embedding, plot_comparacao_scores
 from .training import treinar_com_fila
+from .analysis import avaliar_embeddings, analise_estatistica
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .recommender import EmbeddingRecommender as AI_GEA
+
 # Aliases for convenience
 AI_GEA = EmbeddingRecommender
 
@@ -35,5 +38,7 @@ __all__ = [
     'calcular_deformacao',
     'plot_embedding',
     'plot_comparacao_scores',
-    'treinar_com_fila'
+    'treinar_com_fila',
+    'avaliar_embeddings',
+    'analise_estatistica'
 ]
