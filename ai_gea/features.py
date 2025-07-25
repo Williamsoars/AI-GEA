@@ -1,4 +1,6 @@
 from typing import TYPE_CHECKING, Dict, Any
+import networkx as nx
+from typing import Union
 if TYPE_CHECKING:
     from .recommender import EmbeddingRecommender  # Só para type checking
 
@@ -39,7 +41,7 @@ def extrair_features_grafo(G: nx.Graph) -> Dict[str, Union[float, int]]:
     
     return features
 
-def benchmark_methods(G: nx.Graph, methods_dict: Dict[str, Callable]) -> Dict[str, Dict[str, Any]]:
+def benchmark_methods(G: nx.Graph, methods_dict: Dict[str, callable]) -> Dict[str, Dict[str, Any]]:
     """
     Measure execution time and memory usage of each embedding method applied to graph G.
 
@@ -77,3 +79,4 @@ def benchmark_methods(G: nx.Graph, methods_dict: Dict[str, Callable]) -> Dict[st
             }
 
     return resultados
+
