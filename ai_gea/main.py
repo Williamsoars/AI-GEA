@@ -1,46 +1,74 @@
 import networkx as nx
-from .default_embeddings import default_embeddings
-from .evaluation import avaliar_metodos
-from .recommender import Recommender
-from .logger import Logger
+import pandas as pd
+from graph_loader import load_cora_graph
+from features import extrair_features_grafo
+from defaut_embeddings import deepwalk, walklets, hope
+from evaluation import evaluate_embeddings, calcular_stress, reconstruction_error
+from analysis import analise_estatistica
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-def avaliar_grafos_base():
-    grafos = [
-        nx.karate_club_graph(),
-        nx.cycle_graph(32),
-        nx.path_graph(32),
-    ]
-    metodos = list(default_embeddings.keys())
-    resultados = [
-        avaliar_metodos(G, metodos, default_embeddings, labels_true=nx.get_node_attributes(G, 'club'), n_execucoes=3)
-        for G in grafos
-    ]
-    return grafos, resultados
+# Modelos de embedding disponíveis
+modelos = {
+    "deepwalk": deepwalk,
+    "walklets": walklets,
+    "hope": hope
+}
 
-def main():
-    try:
-        # Treinamento
-        grafos, resultados = avaliar_grafos_base()
-        
-        ia = Recommender()
-        ia.treinar(grafos, resultados)
+# Métricas a avaliar
+metricas = {
+    "stress": calcular_stress,
+    "reconstruction": reconstruction_error,
+    "f1": lambda G, emb: evaluate_embeddings(G, emb)["f1_macro"]
+}
 
-        # Recomendação para novo grafo
-        G_novo = nx.balanced_tree(2, 4)
-        metodos = list(default_embeddings.keys())
-        metricas_novo = avaliar_metodos(G_novo, metodos, default_embeddings, labels_true=None, n_execucoes=3)
-        metodo_recomendado, scores = ia.recomendar(G_novo, metricas_resultantes=metricas_novo)
+# 1. Carregar grafo Cora
+G = load_cora_graph()
 
-        print("Método recomendado:", metodo_recomendado)
-        print("Scores previstos:", scores)
+# 2. Extrair características estruturais
+print("Extraindo características estruturais do grafo...")
+features = extrair_features_grafo(G)
+print("Features:", features)
 
-        # Log
-        logger = Logger()
-        logger.log("BalancedTree", scores, metodo_recomendado)
+# 3. Avaliar embeddings com diferentes métodos e métricas
+resultados = []
 
-    except Exception as e:
-        print(f"Erro durante a execução: {str(e)}")
-        raise
+for modelo_nome, funcao_embedding in modelos.items():
+    print(f"\n--- Rodando modelo: {modelo_nome} ---")
+    emb = funcao_embedding(G)
 
-if __name__ == "__main__":
-    main()
+    for metrica_nome, func_metrica in metricas.items():
+        print(f"> Avaliando métrica: {metrica_nome}")
+        valor = func_metrica(G, emb)
+
+        resultado = {
+            "Modelo": modelo_nome,
+            "Métrica": metrica_nome,
+            "Valor": valor
+        }
+        resultado.update(features)  # adiciona as features ao dicionário
+        resultados.append(resultado)
+
+# 4. Criar DataFrame geral
+df = pd.DataFrame(resultados)
+df.to_csv("resultados_experimento.csv", index=False)
+print("\nResultados salvos em 'resultados_experimento.csv'")
+
+# 5. Visualização
+sns.set(style="whitegrid")
+for metrica in df["Métrica"].unique():
+    df_plot = df[df["Métrica"] == metrica]
+    plt.figure(figsize=(10, 5))
+    sns.violinplot(data=df_plot, x="Modelo", y="Valor")
+    plt.title(f"{metrica.upper()} por Modelo")
+    plt.tight_layout()
+    plt.savefig(f"violin_{metrica}.png")
+    plt.show()
+
+# 6. Análise estatística cruzando modelo × valor da métrica
+for metrica in df["Métrica"].unique():
+    df_sub = df[df["Métrica"] == metrica][["Modelo", "Valor"]].rename(columns={"Modelo": "Tipo", "Valor": "Métrica"})
+    print(f"\nAnalisando estatisticamente a métrica: {metrica}")
+    analise_estatistica(df_sub)
+
+
