@@ -10,7 +10,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
 from .fila_treinamento import FilaTreinamento
-from .utils import extrair_features_grafo  # Certifique-se de ter essa função no utils.py
+from .features import extrair_features_grafo  # Certifique-se de ter essa função no utils.py
 
 class EmbeddingRecommender:
     def __init__(self, modelo_path: str = "embedding_model.pkl", db_path: str = "fila_treinamento.db"):
